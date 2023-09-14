@@ -1,4 +1,11 @@
 <svg viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg">
+<circle cx="1128" cy="1257" fill="transparent" r="1" stroke="rgb(255,100,255)" stroke-width="80"/>
+<circle cx="1561" cy="664" fill="transparent" r="1" stroke="rgb(100,100,255)" stroke-width="80"/>
+<circle cx="1203" cy="1161" fill="transparent" r="1" stroke="rgb(255,100,100)" stroke-width="80"/>
+<circle cx="1269" cy="559" fill="transparent" r="1" stroke="rgb(100,100,255)" stroke-width="80"/>
+<circle cx="1347" cy="1129" fill="transparent" r="1" stroke="rgb(255,100,100)" stroke-width="80"/>
+<circle cx="1367" cy="1065" fill="transparent" r="1" stroke="rgb(255,100,100)" stroke-width="80"/>
+<circle cx="1435" cy="1393" fill="transparent" r="1" stroke="rgb(255,100,100)" stroke-width="80"/>
 <circle cx="1250" cy="1250" fill="transparent" r="1" stroke="rgb(255,255,100)" stroke-width="80"/>
-<circle cx="1250" cy="1100" fill="transparent" r="1" stroke="rgb(100,100,255)" stroke-width="80"/>
+<circle cx="1250" cy="1400" fill="transparent" r="1" stroke="rgb(100,100,255)" stroke-width="80"/>
 </svg>

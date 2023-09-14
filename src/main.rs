@@ -7,13 +7,15 @@ use std::dbg;
 fn main() {
     let mut particle_vector: Vec<Particle> = Vec::new();
 
-    // random_particle_placement(&mut particle_vector);
+    random_particle_placement_3d(&mut particle_vector);
 
-    particle_vector.push(Particle::new(1250.0, 1250.0, 0.0438, -0.0438, ParticleType::Alpha));
+    particle_vector.push(Particle::new(1250.0, 1250.0, 0.0, 0.0, 0.0, 0.0, ParticleType::Alpha));
     particle_vector.push(Particle::new(
         1250.0,
         1100.0,
+        0.0,
         -12.3,
+        0.0,
         0.0,
         ParticleType::Electron,
     ));
@@ -36,7 +38,7 @@ fn main() {
             staticCanvas.display_list.add(
                 Drawing::new()
                     .with_shape(Shape::Circle { radius: 1 })
-                    .with_xy(i.posx as f32, i.posy as f32)
+                    .with_xy(i.posx as f32, staticCanvas.height as f32 - i.posy as f32)
                     .with_style(Style::stroked(5, color)),
             );
         }
@@ -54,7 +56,7 @@ fn main() {
     render::save(&staticCanvas, "overall.svg", SvgRenderer::new()).expect("Failed to render svg");
 }
 
-fn random_particle_placement(particle_vector: &mut Vec<Particle>) {
+fn random_particle_placement_2d(particle_vector: &mut Vec<Particle>) {
     // Generate Particles
     let choices: [u32; 5] = [0, 1, 2, 3, 4];
     let weights = [5000, 4, 3, 6, 1];
@@ -66,6 +68,58 @@ fn random_particle_placement(particle_vector: &mut Vec<Particle>) {
             1 => particle_vector.push(Particle::new(
                 1250.0 + thread_rng().gen_range(-200..200) as f64,
                 1250.0 + thread_rng().gen_range(-200..200) as f64,
+                0.0,
+                thread_rng().gen_range(-63..63) as f64 / 700.0,
+                thread_rng().gen_range(-63..63) as f64 / 700.0,
+                0.0,
+                ParticleType::Proton,
+            )),
+            2 => particle_vector.push(Particle::new(
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                0.0,
+                thread_rng().gen_range(-63..63) as f64 / 700.0,
+                thread_rng().gen_range(-63..63) as f64 / 700.0,
+                0.0,
+                ParticleType::Antiproton,
+            )),
+            3 => particle_vector.push(Particle::new(
+                1250.0 + thread_rng().gen_range(-800..800) as f64,
+                1250.0 + thread_rng().gen_range(-800..800) as f64,
+                0.0,
+                thread_rng().gen_range(-63..63) as f64 / 25.0,
+                thread_rng().gen_range(-63..63) as f64 / 25.0,
+                0.0,
+                ParticleType::Electron,
+            )),
+            4 => particle_vector.push(Particle::new(
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                0.0,
+                thread_rng().gen_range(-63..63) as f64 / 1000.0,
+                thread_rng().gen_range(-63..63) as f64 / 1000.0,
+                0.0,
+                ParticleType::Alpha,
+            )),
+            _ => (),
+        }
+    }
+}
+
+fn random_particle_placement_3d(particle_vector: &mut Vec<Particle>) {
+    // Generate Particles
+    let choices: [u32; 5] = [0, 1, 2, 3, 4];
+    let weights = [5000, 4, 3, 6, 1];
+    let dist = WeightedIndex::new(&weights).unwrap();
+    let mut rng = thread_rng();
+    let output = [(); 3600].map(|_| choices[dist.sample(&mut rng)]);
+    for i in output {
+        match i {
+            1 => particle_vector.push(Particle::new(
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                thread_rng().gen_range(-63..63) as f64 / 700.0,
                 thread_rng().gen_range(-63..63) as f64 / 700.0,
                 thread_rng().gen_range(-63..63) as f64 / 700.0,
                 ParticleType::Proton,
@@ -73,6 +127,8 @@ fn random_particle_placement(particle_vector: &mut Vec<Particle>) {
             2 => particle_vector.push(Particle::new(
                 1250.0 + thread_rng().gen_range(-200..200) as f64,
                 1250.0 + thread_rng().gen_range(-200..200) as f64,
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                thread_rng().gen_range(-63..63) as f64 / 700.0,
                 thread_rng().gen_range(-63..63) as f64 / 700.0,
                 thread_rng().gen_range(-63..63) as f64 / 700.0,
                 ParticleType::Antiproton,
@@ -80,6 +136,8 @@ fn random_particle_placement(particle_vector: &mut Vec<Particle>) {
             3 => particle_vector.push(Particle::new(
                 1250.0 + thread_rng().gen_range(-800..800) as f64,
                 1250.0 + thread_rng().gen_range(-800..800) as f64,
+                1250.0 + thread_rng().gen_range(-800..800) as f64,
+                thread_rng().gen_range(-63..63) as f64 / 25.0,
                 thread_rng().gen_range(-63..63) as f64 / 25.0,
                 thread_rng().gen_range(-63..63) as f64 / 25.0,
                 ParticleType::Electron,
@@ -87,6 +145,8 @@ fn random_particle_placement(particle_vector: &mut Vec<Particle>) {
             4 => particle_vector.push(Particle::new(
                 1250.0 + thread_rng().gen_range(-200..200) as f64,
                 1250.0 + thread_rng().gen_range(-200..200) as f64,
+                1250.0 + thread_rng().gen_range(-200..200) as f64,
+                thread_rng().gen_range(-63..63) as f64 / 1000.0,
                 thread_rng().gen_range(-63..63) as f64 / 1000.0,
                 thread_rng().gen_range(-63..63) as f64 / 1000.0,
                 ParticleType::Alpha,
@@ -103,7 +163,7 @@ fn draw_system(particle_vector: &Vec<Particle>, frame_number: u32) {
         canvas.display_list.add(
             Drawing::new()
                 .with_shape(Shape::Circle { radius: 1 })
-                .with_xy(i.posx as f32, i.posy as f32)
+                .with_xy(i.posx as f32, canvas.height as f32 - i.posy as f32)
                 .with_style(Style::stroked(80, color)),
         );
     }
@@ -116,8 +176,10 @@ fn draw_system(particle_vector: &Vec<Particle>, frame_number: u32) {
 struct Particle {
     posx: f64,
     posy: f64,
+    posz: f64,
     vx: f64,
     vy: f64,
+    vz: f64,
     charge: i32,
     mass: i32,
     color: RGB,
@@ -125,12 +187,14 @@ struct Particle {
 }
 
 impl Particle {
-    fn new(posx: f64, posy: f64, vx: f64, vy: f64, kind: ParticleType) -> Particle {
+    fn new(posx: f64, posy: f64, posz: f64, vx: f64, vy: f64, vz: f64, kind: ParticleType) -> Particle {
         Particle {
             posx: posx,
             posy: posy,
+            posz: posz,
             vx: vx,
             vy: vy,
+            vz: vz,
             charge: {
                 match kind {
                     ParticleType::Electron => -1,
@@ -178,82 +242,148 @@ impl Particle {
         }
     }
 
-    fn calc_paired_electrostatic_force(&self, other: &Particle) -> (f64, f64) {
-        let (difx, dify): (f64, f64) = (self.posx - other.posx, self.posy - other.posy);
-        if (difx == 0.0 && dify == 0.0) {
-            return (0.0, 0.0);
-        } // Particle is at the same position as another particle! We'd prefer this not to happen...
+    // Electrostatic Force
+    fn calc_paired_electrostatic_force(&self, other: &Particle) -> [f64; 3] {
+        let (difx, dify, difz): (f64, f64, f64) = (other.posx - self.posx, other.posy - self.posy, other.posz - self.posz);
+        if (difx == 0.0 && dify == 0.0 && difz == 0.0) {
+            return [0.0; 3];
+        } // Particle is at the same position as another particle! We'd prefer this not to happen because it is ugly...
         if self.charge * other.charge == 0 {
-            return (0.0, 0.0);
+            return [0.0; 3];
         } // At least one of the particles is neutral! No electrostatic force here.
-        let hypotenuse: f64 = (difx.powi(2) + dify.powi(2)).abs().sqrt();
+        let hypotenuse: f64 = (difx.powi(2) + dify.powi(2) + difz.powi(2)).sqrt();
         let magnitude: f64 = 0.44 * self.charge as f64 * 160.2 * other.charge as f64 * 160.2
-            / ((difx.powi(2) + dify.powi(2)) as f64);
-        let mut xout = magnitude * difx / hypotenuse;
-        let mut yout = magnitude * dify / hypotenuse;
-        match (self.charge * other.charge > 0) {
+            / ((difx.powi(2) + dify.powi(2) + difz.powi(2)) as f64);
+        let (mut xout, mut yout, mut zout): (f64, f64, f64) = (magnitude * difx / hypotenuse, magnitude * dify / hypotenuse, magnitude * difz / hypotenuse);
+        match self.charge * other.charge > 0 {
             true => {
                 // If the charges are alike...
-                if self.posx > other.posx {
+                if self.posx > other.posx { // Self to the right of other. Move the self rightwards (+x).
                     xout = -1.0 * xout.abs()
-                }
-                // Self to the right of other. Move the self rightwards (+x).
-                else {
+                } else { // Self to the left of other. Move the self leftwards (-x).
                     xout = xout.abs()
-                } // Self to the left of other. Move the self leftwards (-x).
-                if self.posy > other.posy {
-                    yout = -1.0 * yout.abs()
-                }
-                // Self above other. Move the self up (-y).
-                else {
+                } 
+                if self.posy > other.posy { // Self above other. Move the self up (+y).
+                    yout = - 1.0 * yout.abs()
+                } else { // Self below other Move the self down (-y).
                     yout = yout.abs()
-                } // Self below other Move the self down (+y).
+                }
+                if self.posz > other.posz { // Self in front of other. Move the self farther front (+z).
+                    zout = - 1.0 * zout.abs()
+                } else { // Self below other Move the self down (-z).
+                    zout = zout.abs()
+                }
             }
             false => {
-                // If the charges are opposites...
-                if self.posx > other.posx {
+                // If the charges are different...
+                if self.posx > other.posx { // Self to the right of other. Move the self rightwards (-x).
                     xout = xout.abs()
-                }
-                // Self to the right of other. Move the self leftwards (-x).
-                else {
+                } else { // Self to the left of other. Move the self leftwards (+x).
                     xout = -1.0 * xout.abs()
-                } // Self to the left of other. Move the self rightwards (+x).
-                if self.posy > other.posy {
+                } 
+                if self.posy > other.posy { // Self above other. Move the self down (-y).
                     yout = yout.abs()
+                } else { // Self below other Move the self up (+y).
+                    yout = - 1.0 * yout.abs()
                 }
-                // Self above other. Move the self down (+y).
-                else {
-                    yout = -1.0 * yout.abs()
-                } // Self below otherl Move the self up (-y).
+                if self.posz > other.posz { // Self in front of other. Move the self farther front (-z).
+                    zout = zout.abs()
+                } else { // Self behind the other, move the self forward (+z).
+                    zout = - 1.0 * zout.abs()
+                }
             }
         }
-        (xout, yout)
+        [xout, yout, zout]
     }
 
     fn calc_electrostatic_force_superposition(
         &self,
         particle_vector: &Vec<Particle>,
-    ) -> (f64, f64) {
-        let (mut outx, mut outy): (f64, f64) = (0.0, 0.0);
-        let test: Vec<(f64, f64)> = particle_vector
+    ) -> [f64; 3] {
+        let (mut outx, mut outy, mut outz): (f64, f64, f64) = (0.0, 0.0, 0.0);
+        let test: Vec<[f64; 3]> = particle_vector
             .into_iter()
             .map(|x| {
                 let output = x.calc_paired_electrostatic_force(&self);
-                outx += output.0;
-                outy += output.1;
+                outx += output[0];
+                outy += output[1];
+                outz += output[2];
                 output
             })
             .collect();
         // dbg!(test);
-        (outx, outy)
+        [outx, outy, outz]
     }
 
+    // Magnetic Force (Moving charges produce magnetic fields and are acted upon by a magnetic force when moving through such a field)
+    fn calc_others_magnetic_field(&self, other: &Particle) -> [f64; 3] {
+        // Components from other to self (Test magnetic field produced by other at the location of self).
+        let (difx, dify, difz): (f64, f64, f64) = (self.posx - other.posx, self.posy - other.posy, self.posz - other.posz);
+        if (difx == 0.0 && dify == 0.0 && difz == 0.0) {
+            return [0.0; 3];
+        } // Particle is at the same position as another particle! We'd prefer this not to happen because it is ugly...
+        if self.charge * other.charge == 0 {
+            return [0.0; 3];
+        } // At least one of the particles is neutral! No electrostatic force here.
+        // Magnitude of the vector.
+        let hypotenuse: f64 = (difx.powi(2) + dify.powi(2) + difz.powi(2)).sqrt();
+        // Permeability of free space divided by 4pi times scaling of Ampere*seconds and so on
+        let coefficient: f64 = 0.00003895172 * 160.2 * other.charge as f64 / hypotenuse / hypotenuse;
+        // Multiply coefficient by velocity components
+        let (x, y, z): (f64, f64, f64) = (other.vx * coefficient, other.vy * coefficient, other.vz * coefficient);
+        // Calculate components of the unit vector in the direction from self to other.
+        let (ux, uy, uz): (f64, f64, f64) = (difx / hypotenuse, dify / hypotenuse, difz / hypotenuse);
+        // Perform the cross product. Use the "cross product matrix" here: https://people.eecs.ku.edu/~jrmiller/Courses/VectorGeometry/VectorOperations.html
+        [
+            -1.0 * z * uy + y * uz,
+            z * ux + -1.0 * x * uz,
+            -1.0 * y * ux + x * uy
+        ]
+    }
+
+    fn calc_paired_magnetic_force(&self, other: &Particle) -> [f64; 3] {
+        let (qvx, qvy, qvz): (f64, f64, f64) = (self.charge as f64 * self.vx, self.charge as f64 * self.vy, self.charge as f64 * self.vz);
+        let B = self.calc_others_magnetic_field(other);
+        // Perform the cross product (F = qv x B)
+        [
+            -1.0 * qvz * B[1] + qvy * B[2],
+            qvz * B[0] + -1.0 * qvx * B[2],
+            -1.0 * qvy * B[0] + qvx * B[1]
+        ]
+    }
+
+    fn calc_magnetic_force_superposition(
+        &self,
+        particle_vector: &Vec<Particle>,
+    ) -> [f64; 3] {
+        let (mut outx, mut outy, mut outz): (f64, f64, f64) = (0.0, 0.0, 0.0);
+        let test: Vec<[f64; 3]> = particle_vector
+            .into_iter()
+            .map(|x| {
+                let output = x.calc_paired_magnetic_force(&self);
+                outx += output[0];
+                outy += output[1];
+                outz += output[2];
+                output
+            })
+            .collect();
+        // dbg!(test);
+        [outx, outy, outz]
+    }
+
+    // Final Update Function
     fn update_particle(&mut self, particle_vector: &Vec<Particle>) {
-        let net_force = self.calc_electrostatic_force_superposition(particle_vector);
+        // Still learning how to do this properly in rust: https://stackoverflow.com/questions/41207666/how-do-i-add-two-rust-arrays-element-wise
+        let mut net_force:[f64; 3] = [0.0; 3];
+        for i in 0..3 {
+            net_force[i] = self.calc_magnetic_force_superposition(particle_vector)[i] + self.calc_electrostatic_force_superposition(particle_vector)[i];
+        }
         self.posx += self.vx;
         self.posy += self.vy;
-        self.vx += net_force.0 / (self.mass as f64);
-        self.vy += net_force.1 / (self.mass as f64);
+        self.posz += self.vz;
+        self.vx += net_force[0] / (self.mass as f64);
+        self.vy += net_force[1] / (self.mass as f64);
+        self.vz += net_force[2] / (self.mass as f64);
     }
 }
 
