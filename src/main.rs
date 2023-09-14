@@ -5,8 +5,10 @@ use rand::prelude::*;
 use std::dbg;
 
 fn main() {
+    // Empty vector to hold all of the particles
     let mut particle_vector: Vec<Particle> = Vec::new();
 
+    // Place down particles.
     random_particle_placement_3d(&mut particle_vector);
 
     particle_vector.push(Particle::new(1250.0, 1250.0, 0.0, 0.0, 0.0, 0.0, ParticleType::Alpha));
@@ -20,14 +22,28 @@ fn main() {
         ParticleType::Electron,
     ));
 
+    // Change colors of Electrons to be more visible...
+    let mut counter1 = 0;
+    for i in &mut particle_vector {
+        if i.kind == ParticleType::Electron {
+            if counter1 % 2 == 1 {
+                i.color.r += counter1*9;
+                i.color.g += counter1*4;
+            }
+            i.color.r += counter1*4;
+            i.color.g += counter1*9;
+        }
+        counter1 += 1;
+    }
+
     // Draw the Current State of the Canvas
-    dbg!(&particle_vector);
     let mut reference = particle_vector.clone();
     draw_system(&particle_vector, 0);
 
-    let mut staticCanvas = Canvas::new(2500, 2500);
+    // Draw over time
+    let mut static_canvas = Canvas::new(2500, 2500);
 
-    for frame in 1..=8000_u32 {
+    for _ in 0..=8000_u32 {
         for i in &mut particle_vector {
             i.update_particle(&reference);
         }
@@ -35,25 +51,24 @@ fn main() {
 
         for i in &particle_vector {
             let color = i.color;
-            staticCanvas.display_list.add(
+            static_canvas.display_list.add(
                 Drawing::new()
                     .with_shape(Shape::Circle { radius: 1 })
-                    .with_xy(i.posx as f32, staticCanvas.height as f32 - i.posy as f32)
+                    .with_xy(i.posx as f32, static_canvas.height as f32 - i.posy as f32)
                     .with_style(Style::stroked(5, color)),
             );
         }
 
         reference = particle_vector.clone();
-        if frame == 1_u32 {
-            dbg!(&particle_vector);
-        }
-        if frame == 1000_u32 {
-            dbg!(&particle_vector);
-        }
+        // if frame == 1_u32 {
+        //     dbg!(&particle_vector);
+        // }
+        // if frame == 1000_u32 {
+        //     dbg!(&particle_vector);
+        // }
     }
-    dbg!(&particle_vector);
 
-    render::save(&staticCanvas, "overall.svg", SvgRenderer::new()).expect("Failed to render svg");
+    render::save(&static_canvas, "overall.svg", SvgRenderer::new()).expect("Failed to render svg");
 }
 
 fn random_particle_placement_2d(particle_vector: &mut Vec<Particle>) {
@@ -216,8 +231,8 @@ impl Particle {
             color: {
                 match kind {
                     ParticleType::Electron => RGB {
-                        r: 100,
-                        g: 100,
+                        r: 60,
+                        g: 60,
                         b: 255,
                     },
                     ParticleType::Neutron => Color::black(),
@@ -245,7 +260,7 @@ impl Particle {
     // Electrostatic Force
     fn calc_paired_electrostatic_force(&self, other: &Particle) -> [f64; 3] {
         let (difx, dify, difz): (f64, f64, f64) = (other.posx - self.posx, other.posy - self.posy, other.posz - self.posz);
-        if (difx == 0.0 && dify == 0.0 && difz == 0.0) {
+        if difx == 0.0 && dify == 0.0 && difz == 0.0 {
             return [0.0; 3];
         } // Particle is at the same position as another particle! We'd prefer this not to happen because it is ugly...
         if self.charge * other.charge == 0 {
@@ -301,7 +316,7 @@ impl Particle {
         particle_vector: &Vec<Particle>,
     ) -> [f64; 3] {
         let (mut outx, mut outy, mut outz): (f64, f64, f64) = (0.0, 0.0, 0.0);
-        let test: Vec<[f64; 3]> = particle_vector
+        let _: Vec<[f64; 3]> = particle_vector
             .into_iter()
             .map(|x| {
                 let output = x.calc_paired_electrostatic_force(&self);
@@ -311,7 +326,7 @@ impl Particle {
                 output
             })
             .collect();
-        // dbg!(test);
+        // dbg!(_);
         [outx, outy, outz]
     }
 
@@ -319,7 +334,7 @@ impl Particle {
     fn calc_others_magnetic_field(&self, other: &Particle) -> [f64; 3] {
         // Components from other to self (Test magnetic field produced by other at the location of self).
         let (difx, dify, difz): (f64, f64, f64) = (self.posx - other.posx, self.posy - other.posy, self.posz - other.posz);
-        if (difx == 0.0 && dify == 0.0 && difz == 0.0) {
+        if difx == 0.0 && dify == 0.0 && difz == 0.0 {
             return [0.0; 3];
         } // Particle is at the same position as another particle! We'd prefer this not to happen because it is ugly...
         if self.charge * other.charge == 0 {
@@ -343,12 +358,12 @@ impl Particle {
 
     fn calc_paired_magnetic_force(&self, other: &Particle) -> [f64; 3] {
         let (qvx, qvy, qvz): (f64, f64, f64) = (self.charge as f64 * self.vx, self.charge as f64 * self.vy, self.charge as f64 * self.vz);
-        let B = self.calc_others_magnetic_field(other);
+        let b = self.calc_others_magnetic_field(other);
         // Perform the cross product (F = qv x B)
         [
-            -1.0 * qvz * B[1] + qvy * B[2],
-            qvz * B[0] + -1.0 * qvx * B[2],
-            -1.0 * qvy * B[0] + qvx * B[1]
+            -1.0 * qvz * b[1] + qvy * b[2],
+            qvz * b[0] + -1.0 * qvx * b[2],
+            -1.0 * qvy * b[0] + qvx * b[1]
         ]
     }
 
@@ -357,7 +372,7 @@ impl Particle {
         particle_vector: &Vec<Particle>,
     ) -> [f64; 3] {
         let (mut outx, mut outy, mut outz): (f64, f64, f64) = (0.0, 0.0, 0.0);
-        let test: Vec<[f64; 3]> = particle_vector
+        let _: Vec<[f64; 3]> = particle_vector
             .into_iter()
             .map(|x| {
                 let output = x.calc_paired_magnetic_force(&self);
@@ -367,7 +382,7 @@ impl Particle {
                 output
             })
             .collect();
-        // dbg!(test);
+        // dbg!(_);
         [outx, outy, outz]
     }
 
@@ -387,7 +402,7 @@ impl Particle {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 enum ParticleType {
     Electron,
     Proton,
