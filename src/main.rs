@@ -38,7 +38,7 @@ fn main() {
 
     // Draw the Current State of the Canvas
     let mut reference = particle_vector.clone();
-    draw_system(&particle_vector, 0);
+    draw_system_barebones(&particle_vector, 0);
 
     // Draw over time
     let mut static_canvas = Canvas::new(2500, 2500);
@@ -49,15 +49,39 @@ fn main() {
         }
         // draw_system(&particle_vector, frame);
 
+        // Assuming camera position at 1250, 1250, 2000...
+        let mut temp: Vec<(f64, &Particle)> = Vec::new();
+        // Sort the particles by their distance from the camera...
         for i in &particle_vector {
-            let color = i.color;
+            temp.push(
+                (
+                    {let (difx, dify, difz) = (1250.0 - i.posx, 1250.0 - i.posy, 1500.0 - i.posz);
+                    (difx.powi(2) + dify.powi(2) + difz.powi(2)).sqrt()},
+                    i
+                )
+            )
+        }
+        temp.sort_by(|a, b| (a.0).partial_cmp(&b.0).unwrap());
+        // Now draw the particles and scale depending on distance using a selected "normal distance" of 2000units
+        for i in &temp {
+            let color = i.1.color;
             static_canvas.display_list.add(
                 Drawing::new()
                     .with_shape(Shape::Circle { radius: 1 })
-                    .with_xy(i.posx as f32, static_canvas.height as f32 - i.posy as f32)
-                    .with_style(Style::stroked(5, color)),
+                    .with_xy(i.1.posx as f32, static_canvas.height as f32 - i.1.posy as f32)
+                    .with_style(Style::stroked((5.0 * (1500.0 / i.0)) as u32, color)),
             );
         }
+
+        // for i in &particle_vector {
+        //     let color = i.color;
+        //     static_canvas.display_list.add(
+        //         Drawing::new()
+        //             .with_shape(Shape::Circle { radius: 1 })
+        //             .with_xy(i.posx as f32, static_canvas.height as f32 - i.posy as f32)
+        //             .with_style(Style::stroked(5, color)),
+        //     );
+        // }
 
         reference = particle_vector.clone();
         // if frame == 1_u32 {
@@ -171,7 +195,10 @@ fn random_particle_placement_3d(particle_vector: &mut Vec<Particle>) {
     }
 }
 
-fn draw_system(particle_vector: &Vec<Particle>, frame_number: u32) {
+
+// The most basic draw function, top down, infinite distance, no correlation of size and distance, parallel projection so no transformation.
+// Z axis not drawn (staring straight down "z" axis here)
+fn draw_system_barebones(particle_vector: &Vec<Particle>, frame_number: u32) {
     let mut canvas = Canvas::new(2500, 2500);
     for i in particle_vector {
         let color = i.color;
@@ -186,6 +213,8 @@ fn draw_system(particle_vector: &Vec<Particle>, frame_number: u32) {
     temp.push_str(".svg");
     render::save(&canvas, &temp, SvgRenderer::new()).expect("Failed to render svg");
 }
+
+// fn draw_system_parallel_projection_size_correlation(particle_vector: &Vec<Particle>, frame_number: u32)
 
 #[derive(Debug, Clone)]
 struct Particle {
